@@ -1,20 +1,29 @@
-from django.contrib.auth.backends import ModelBackend
-from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import check_password
+from account.models import UserAccount as User
+from django.db.models import Q
 
+class AuthBackend(object):
+    supports_object_permissions = True
+    supports_anonymous_user = False
+    supports_inactive_user = False
 
-class UserEmailPhoneBackend(ModelBackend):
-
-    def authenticate(self, request, email=None, password=None, **kwargs):
-        user_model = get_user_model()
+    def get_user(self, user_id):
         try:
-            if '@' in email:
-                user = user_model.objects.get(email__iexact=email)
-            else:
-                user = user_model.objects.get(phone_number__iexact=email)
-            if check_password(password, user.password):
-                return user
-            else:
-                return None
-        except user_model.DoesNotExist:
+           return User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+           return None
+
+    def authenticate(self, request, username, password):
+
+        try:
+            user = User.objects.get(
+                Q(username=username) | Q(email=username) | Q(phone_number=username)
+            )
+
+        except User.DoesNotExist:
+            return None
+
+        if user.check_password(password):
+            return user
+
+        else:
             return None

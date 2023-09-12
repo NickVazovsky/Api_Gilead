@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import os
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,8 +28,7 @@ SECRET_KEY = 'django-insecure-$03piruv-mo-uxx2d_*!lnmu=szgn9or_j#m%8u$h-o=k(+g+y
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['johnDoes.pythonanywhere.com']
 
 # Application definition
 
@@ -39,16 +40,26 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'account.apps.AccountConfig',
     'rest_framework_simplejwt.token_blacklist',
+    'drf_yasg',
+    'djoser',
     'corsheaders',
+    'import_export',
+    'test_video',
+    'ckeditor',
+    'ckeditor_uploader',
+    'drf_multiple_model',
+    'account.apps.AccountConfig',
+    'news.apps.NewsConfig',
+    'instructions.apps.InstructionsConfig',
+    'material_app.apps.MaterialAppConfig',
 
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -106,11 +117,39 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000"
+]
+
+CORS_ALLOW_METHODS = (
+    "GET",
+    "POST",
     )
+
+CORS_ALLOW_HEADERS = (
+    *default_headers,
+    'x-tokens',
+)
+CORS_ALLOW_ALL_ORIGINS = True
+
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+     'DATETIME_FORMAT': "%d-%m-%Y-%H:%M",
 }
+
+
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
@@ -150,12 +189,39 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
+
+
+DJOSER = {
+    'HIDE_USER': True,
+    'PASSWORD_RESET_CONFIRM_RETYPE': True,
+    'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,
+    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
+    'PASSWORD_RESET_CONFIRM_URL': 'reset_password_confirm?uid={uid}&token={token}',
+    'SERIALIZERS': {
+        'user_create': 'account.serializers.UsersSerializer',
+        'user': 'account.serializers.UsersSerializer',
+        'current_user': 'account.serializers.UsersSerializer'
+    },
+    'EMAIL': {
+        'password_reset': 'account.emails.PasswordResetEmail',
+        'password_changed_confirmation': 'account.emails.PasswordChangedConfirmationEmail',
+    }
+}
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "gileadapi@gmail.com"
+EMAIL_HOST_PASSWORD = "qutftqpfesymtwtk"
+EMAIL_USE_TLS = True
+
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'RU-ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -165,19 +231,32 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
-AUTH_USER_MODEL = 'account.UserAccount'
-AUTHENTICATION_BACKENDS = [
-    'account.backends.UserEmailPhoneBackend'
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'staticfiles_dev'),
 ]
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+AUTH_USER_MODEL = 'account.UserAccount'
+AUTHENTICATION_BACKENDS = ('account.backends.AuthBackend',)
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-# CORS_ALLOWED_ORIGINS = [
-#     "https://example.com",
-#     "https://sub.example.com",
-#     "http://localhost:8080",
-#     "http://127.0.0.1:9000",
-# ]
-CORS_ALLOW_ALL_ORIGINS = True
+
+
+
+CKEDITOR_UPLOAD_PATH = "uploads"
+CKEDITOR_IMAGE_BACKEND = 'pillow'
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': None,
+        'autoParagraph':False,
+
+    },
+
+}

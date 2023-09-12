@@ -1,30 +1,23 @@
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from .serializers import UsersSerializer
-from rest_framework.decorators import permission_classes
+from .serializers import UsersRetrieveSerializer
+from rest_framework.generics import RetrieveAPIView
 
 User = get_user_model()
 
 
 # Create your views here.
+class UsersRetrieved(RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+    queryset = User.objects.all()
+    serializer_class = UsersRetrieveSerializer
+    lookup_field = 'id'
 
 
 class AccountUser(APIView):
-
-    def get(self, request, pk):
-        # Получаем набор всех записей из таблицы Capital
-        queryset = User.objects.get(pk=pk)
-        # Сериализуем извлечённый набор записей
-        serializer_for_queryset = UsersSerializer(
-            instance=queryset,  # Передаём набор записей
-            many=False
-        )
-        return Response(serializer_for_queryset.data)
-
+    permission_classes = (AllowAny,)
     def post(self, request, format=None):
         data = self.request.data
         email = data['email']

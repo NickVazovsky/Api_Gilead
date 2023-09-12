@@ -1,3 +1,5 @@
 .idea
 /myvenv
+/media
+/static
 db.sqlite3
